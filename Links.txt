@@ -1,0 +1,7 @@
+Links
+
+General description: https://www.kaggle.com/c/ieee-fraud-detection
+
+The data: https://www.kaggle.com/c/ieee-fraud-detection/data
+
+Discussion: https://www.kaggle.com/c/ieee-fraud-detection/discussion/101203
