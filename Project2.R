@@ -26,11 +26,10 @@ table(DeviceType)
 
 summary(data$TransactionAmt)
 boxplot(data$TransactionAmt)
-data <- data[data$TransactionAmt<10000,] #Two anomolies both not fraud
+data <- data[data$TransactionAmt<10000,] #Two anomolies both not fraud so remove from data
 
 #3% of the data is Fraud
 table(data$isFraud)
-drop = "isFraud"
 y<-data[,2]
 x<-data[,4]
 featurePlot(x,y,"box") #average higher for fraud
@@ -39,6 +38,7 @@ featurePlot(x,y,"box") #average higher for fraud
 #library(missForest)
 #modelImputation <- missForest(as.data.frame(data))
 
+#Add column for hour of day that transaction takes place                     
 data['hour']=(floor(data['TransactionDT']/3600))%%24
 ggplot(data, aes(x=hour, fill=isFraud))+geom_bar(aes( y=..count../tapply(..count.., ..fill.. ,sum)[..fill..]), position="dodge") + scale_y_continuous(labels=percent)
 ggplot(data, aes(x=hour))+geom_bar()
@@ -64,9 +64,6 @@ table(No$card4)/nrow(No)
 table(Yes$card6)/nrow(Yes) #credit 48%, debit 52%
 table(No$card6)/nrow(No) #credit 24%, debit 75%
 
-#M4
-table(Yes$M9)/nrow(Yes)
-table(No$M9)/nrow(No)
 
 #P_emaildomain should be kept
 data <- data %>% mutate(P_emaildomain = fct_collapse(P_emaildomain, "google"=c("gmail","gmail.com"), "yahoo"=c("yahoo.co.jp","yahoo.co.uk","yahoo.com","yahoo.com.mx","yahoo.de","yahoo.es","yahoo.fr"),"Microsoft"=c("hotmail.co.uk","hotmail.com","hotmail.de","hotmail.es","hotmail.fr","live.com","live.com.mx","live.fr","outlook.com","outlook.es")))
