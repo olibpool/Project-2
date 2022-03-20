@@ -1,0 +1,89 @@
+---
+title: "Project 2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+setwd("~/ID5059")
+library(tidyverse)
+library(caret)
+library(randomForest)
+library(ggplot2)
+library(scales)
+transaction <- read.csv("train_transaction.csv", header=TRUE) %>% na_if("")
+identity <- read.csv("train_identity.csv", header=TRUE) %>% na_if("")
+attach(transaction)
+attach(identity)
+```
+
+Merge identity and transaction data
+```{r}
+data <- merge(transaction,identity,by="TransactionID", all.x=TRUE)
+data$isFraud <- as.factor(data$isFraud)
+```
+
+Drop columns with certain proportion of NA
+```{r}
+na = colSums(is.na(data))/nrow(data)
+na
+criteria = 0.8
+data = data[,!sapply(data, function(x) mean(is.na(x)))>criteria]
+#Goes from 360 to 226 variables when change criteria from 0.8 to 0.75
+```
+
+Identify two anomolies in Transaction amount
+```{r}
+summary(data$TransactionAmt)
+boxplot(data$TransactionAmt)
+data <- data[data$TransactionAmt<10000,]
+```
+Only 3% of data is fraudulent
+```{r}
+table(data$isFraud)
+#boxplot of TransactionAmt for both outcomes
+y<-data[,2]
+x<-data[,4]
+featurePlot(x,y,"box")
+```
+
+Feature engineering of TransactionDT column
+```{r}
+data['hour']=(floor(data['TransactionDT']/3600))%%24
+fraction<-aggregate(as.numeric(data$isFraud)-1, list(data$hour), FUN=mean)
+plot(x=fraction$Group.1, y=fraction$x, xlab="Hour",ylab="Fraction of fraudulent transactions",type="l")
+ggplot(data, aes(x=hour, fill=isFraud))+geom_bar(aes( y=..count../tapply(..count.., ..fill.. ,sum)[..fill..]), position="dodge") + scale_y_continuous(labels=percent)
+ggplot(data, aes(x=hour))+geom_bar()
+```
+
+Split data into class 1 and 0
+```{r}
+Yes <- data[which(data$isFraud == "1"),]
+No <- data[which(data$isFraud=="0"),]
+```
+
+Transaction amount key factor
+```{r}
+summary(Yes$TransactionAmt) #Median 75, mean 150
+summary(No$TransactionAmt) #Median 68.5, mean 134
+
+```
+
+Product CD key factor
+```{r}
+table(Yes$ProductCD)/nrow(Yes)#Significant proportion of type C
+table(No$ProductCD)/nrow(No) #75% are of type W
+
+```
+
+P_emaildomain should be kept
+```{r}
+
+data <- data %>% mutate(P_emaildomain = fct_collapse(P_emaildomain, "google"=c("gmail","gmail.com"), "yahoo"=c("yahoo.co.jp","yahoo.co.uk","yahoo.com","yahoo.com.mx","yahoo.de","yahoo.es","yahoo.fr"),"Microsoft"=c("hotmail.co.uk","hotmail.com","hotmail.de","hotmail.es","hotmail.fr","live.com","live.com.mx","live.fr","outlook.com","outlook.es")))
+data <- data %>% mutate(P_emaildomain = fct_collapse(P_emaildomain, "other"=c("web.de","servicios-ta.com","twc.com","suddenlink.net","sc.rr.com","q.com","ptd.net","protonmail.com","prodigy.net.mx","netzero.net","netzero.com","gmx.de","frontiernet.net","frontier.com","embarqmail.com","cfl.rr.com","centurylink.net","cableone.net")))
+ggplot(data, aes(x=P_emaildomain, fill=isFraud))+geom_bar(aes( y=..count../tapply(..count.., ..fill.. ,sum)[..fill..]), position="dodge") + scale_y_continuous(labels=percent)+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
