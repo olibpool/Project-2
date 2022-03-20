@@ -40,6 +40,8 @@ featurePlot(x,y,"box") #average higher for fraud
 
 #Add column for hour of day that transaction takes place                     
 data['hour']=(floor(data['TransactionDT']/3600))%%24
+fraction<-aggregate(as.numeric(data$isFraud)-1, list(data$hour), FUN=mean)                   
+plot(x=fraction$Group.1, y=fraction$x, xlab="Hour",ylab="Fraction of fraudulent transactions",type="l")
 ggplot(data, aes(x=hour, fill=isFraud))+geom_bar(aes( y=..count../tapply(..count.., ..fill.. ,sum)[..fill..]), position="dodge") + scale_y_continuous(labels=percent)
 ggplot(data, aes(x=hour))+geom_bar()
 
