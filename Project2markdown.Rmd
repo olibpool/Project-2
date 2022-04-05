@@ -5,10 +5,11 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "/Users/oli/Uni-Stuff/2022/Sem 2/Data Mining/Projects/Project 2/Data/initial")
 ```
 
 ```{r, include=FALSE}
-setwd("~/ID5059")
+setwd("/Users/oli/Uni-Stuff/2022/Sem 2/Data Mining/Projects/Project 2/Data/initial")
 library(tidyverse)
 library(caret)
 library(randomForest)
@@ -18,11 +19,12 @@ library(Hmisc)
 library(plyr)
 library(dplyr)
 
-
+getwd()
 ```
 
 Load in the data
 ```{r}
+getwd()
 transaction <- read.csv("train_transaction.csv", header=TRUE) %>% na_if("")
 identity <- read.csv("train_identity.csv", header=TRUE) %>% na_if("")
 attach(transaction)
